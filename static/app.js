@@ -6,18 +6,20 @@ function uploadDocument() {
 
   if (!fileInput.files[0]) {
     responseDiv.innerHTML =
-      '<div class="response">Please select a file first.</div>';
+      '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Please select a file first.</p></div></div></div>';
     return;
   }
 
   uploadButton.disabled = true;
   queryButton.disabled = true;
-  uploadButton.textContent = "Uploading...";
+  uploadButton.innerHTML =
+    '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
 
   var formData = new FormData();
   formData.append("file", fileInput.files[0]);
 
-  responseDiv.innerHTML = '<div class="loading">Uploading document...</div>';
+  responseDiv.innerHTML =
+    '<div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-cloud-upload-alt text-blue-500 mr-3 mt-1"></i><div><p class="text-blue-700 font-medium">Uploading document...</p></div></div></div>';
 
   fetch("/upload", {
     method: "POST",
@@ -29,37 +31,33 @@ function uploadDocument() {
     .then(function (result) {
       if (result.document_id) {
         responseDiv.innerHTML =
-          '<div class="response">' +
-          "[SUCCESS] Document uploaded successfully!" +
-          '<div class="file-info">' +
-          "Document ID: " +
+          '<div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i><div><p class="text-green-700 font-medium">Document uploaded successfully!</p><div class="mt-2 text-sm text-gray-600"><p><strong>Document ID:</strong> ' +
           result.document_id +
-          "<br>" +
-          "Filename: " +
+          "</p><p><strong>Filename:</strong> " +
           result.filename +
-          "<br>" +
-          "Size: " +
+          "</p><p><strong>Size:</strong> " +
           result.size +
-          " bytes" +
-          "</div>" +
-          "</div>";
+          " bytes</p></div></div></div></div>";
         fileInput.value = "";
       } else {
         var errorMessage = result.detail || "Unknown error";
         responseDiv.innerHTML =
-          '<div class="response">[ERROR] Error: ' + errorMessage + "</div>";
+          '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Error: ' +
+          errorMessage +
+          "</p></div></div></div>";
       }
     })
     .catch(function (error) {
       responseDiv.innerHTML =
-        '<div class="response">[ERROR] Network error: ' +
+        '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Network error: ' +
         error.message +
-        "</div>";
+        "</p></div></div></div>";
     })
     .finally(function () {
       uploadButton.disabled = false;
       queryButton.disabled = false;
-      uploadButton.textContent = "Upload";
+      uploadButton.innerHTML =
+        '<i class="fas fa-cloud-upload-alt mr-2"></i>Upload';
     });
 }
 
@@ -69,12 +67,13 @@ async function loadDocuments() {
 
   if (documentListDiv.style.display === "block") {
     documentListDiv.style.display = "none";
-    documentButton.textContent = "Show Documents";
+    documentButton.innerHTML = '<i class="fas fa-list mr-2"></i>Show Documents';
     return;
   }
 
   documentListDiv.style.display = "block";
-  documentButton.textContent = "Hide Documents";
+  documentButton.innerHTML =
+    '<i class="fas fa-eye-slash mr-2"></i>Hide Documents';
 
   try {
     var response = await fetch("/documents");
@@ -82,33 +81,37 @@ async function loadDocuments() {
 
     if (data.documents.length === 0) {
       documentListDiv.innerHTML =
-        '<div class="response">No documents uploaded yet.</div>';
+        '<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-info-circle text-yellow-500 mr-3 mt-1"></i><div><p class="text-yellow-700 font-medium">No documents uploaded yet.</p></div></div></div>';
       return;
     }
 
-    var html = '<div class="response">';
+    var html = '<div class="space-y-3">';
     for (var i = 0; i < data.documents.length; i++) {
       var doc = data.documents[i];
       html +=
-        '<div style="margin-bottom: 15px; padding: 10px; border-left: 3px solid #0078d4;">' +
-        "<strong>Filename:</strong> " +
+        '<div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow fade-in">' +
+        '<div class="flex items-start justify-between">' +
+        '<div class="flex-1">' +
+        '<h4 class="font-semibold text-gray-800 mb-2"><i class="fas fa-file-alt text-blue-500 mr-2"></i>' +
         doc.filename +
-        "<br>" +
-        "<strong>Size:</strong> " +
+        "</h4>" +
+        '<p class="text-sm text-gray-600"><strong>Size:</strong> ' +
         doc.size +
-        " bytes<br>" +
+        " bytes</p>" +
+        "</div>" +
         "<button onclick=\"deleteDocument('" +
         doc.document_id +
-        '\')" style="background-color: #d83b01; margin-top: 10px;">Delete Document</button>' +
+        '\')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors"><i class="fas fa-trash mr-1"></i>Delete</button>' +
+        "</div>" +
         "</div>";
     }
     html += "</div>";
     documentListDiv.innerHTML = html;
   } catch (error) {
     documentListDiv.innerHTML =
-      '<div class="response">[ERROR] Error loading documents: ' +
+      '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Error loading documents: ' +
       error.message +
-      "</div>";
+      "</p></div></div></div>";
   }
 }
 
@@ -142,16 +145,17 @@ function queryDocuments() {
 
   if (!queryInput.value.trim()) {
     responseDiv.innerHTML =
-      '<div class="response">Please enter a question.</div>';
+      '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Please enter a question.</p></div></div></div>';
     return;
   }
 
   uploadButton.disabled = true;
   queryButton.disabled = true;
-  queryButton.textContent = "Processing...";
+  queryButton.innerHTML =
+    '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
 
   responseDiv.innerHTML =
-    '<div class="response">[AI] <strong>Response:</strong><br><br><span id="streamingResponse"></span></div>';
+    '<div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-robot text-blue-500 mr-3 mt-1"></i><div><p class="text-blue-700 font-medium">AI Response:</p><div class="mt-3 text-gray-800 whitespace-pre-wrap" id="streamingResponse"></div></div></div></div>';
   var streamingSpan = document.getElementById("streamingResponse");
   streamingSpan.textContent = "";
 
@@ -172,27 +176,32 @@ function queryDocuments() {
     })
     .then(function (data) {
       if (data.type === "complete" && data.response) {
-        streamingSpan.textContent = data.response;
-        streamingSpan.innerHTML +=
-          "<br><br><small>Query ID: " + data.query_id + "</small>";
+        responseDiv.innerHTML =
+          '<div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i><div><p class="text-green-700 font-medium">AI Response:</p><div class="mt-3 text-gray-800 whitespace-pre-wrap">' +
+          data.response +
+          '</div><div class="mt-3 text-xs text-gray-500"><i class="fas fa-hashtag mr-1"></i>Query ID: ' +
+          data.query_id +
+          "</div></div></div></div>";
       } else if (data.type === "error" && data.error) {
         responseDiv.innerHTML =
-          '<div class="response">[ERROR] Error: ' + data.error + "</div>";
+          '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Error: ' +
+          data.error +
+          "</p></div></div></div>";
       } else {
         responseDiv.innerHTML =
-          '<div class="response">[ERROR] Invalid response format</div>';
+          '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Invalid response format</p></div></div></div>';
       }
     })
     .catch(function (error) {
       responseDiv.innerHTML =
-        '<div class="response">[ERROR] Network error: ' +
+        '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Network error: ' +
         error.message +
-        "</div>";
+        "</p></div></div></div>";
     })
     .finally(function () {
       uploadButton.disabled = false;
       queryButton.disabled = false;
-      queryButton.textContent = "Query";
+      queryButton.innerHTML = '<i class="fas fa-search mr-2"></i>Query';
     });
 }
 
@@ -212,7 +221,8 @@ async function clearHistory() {
       var historyDiv = document.getElementById("historyResponse");
       historyDiv.style.display = "none";
       historyDiv.innerHTML = "";
-      document.getElementById("historyButton").textContent = "Show History";
+      document.getElementById("historyButton").innerHTML =
+        '<i class="fas fa-clock mr-2"></i>Show History';
     } else {
       var error = await response.json();
       alert("Error clearing history: " + (error.detail || "Unknown error"));
@@ -230,12 +240,12 @@ function loadHistory() {
 
   if (historyDiv.style.display === "block") {
     historyDiv.style.display = "none";
-    historyButton.textContent = "Show History";
+    historyButton.innerHTML = '<i class="fas fa-clock mr-2"></i>Show History';
     return;
   }
 
   historyDiv.style.display = "block";
-  historyButton.textContent = "Hide History";
+  historyButton.innerHTML = '<i class="fas fa-eye-slash mr-2"></i>Hide History';
 
   fetch("/history")
     .then(function (response) {
@@ -244,11 +254,11 @@ function loadHistory() {
     .then(function (data) {
       if (data.total === 0) {
         historyDiv.innerHTML =
-          '<div class="response">No query history available.</div>';
+          '<div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-info-circle text-yellow-500 mr-3 mt-1"></i><div><p class="text-yellow-700 font-medium">No query history available.</p></div></div></div>';
         return;
       }
 
-      var historyHtml = '<div class="response">';
+      var historyHtml = '<div class="space-y-3">';
       for (var i = 0; i < data.history.length; i++) {
         var item = data.history[i];
         var timestamp = new Date(
@@ -260,18 +270,18 @@ function loadHistory() {
             : item.response;
 
         historyHtml +=
-          '<div style="margin-bottom: 20px; padding: 10px; border-left: 3px solid #0078d4;">' +
-          "<strong>Query:</strong> " +
+          '<div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow fade-in">' +
+          '<div class="mb-2"><h4 class="font-semibold text-gray-800"><i class="fas fa-question-circle text-blue-500 mr-2"></i>' +
           item.query +
-          "<br>" +
-          "<strong>Response:</strong> " +
+          "</h4></div>" +
+          '<div class="mb-2"><p class="text-sm text-gray-700"><i class="fas fa-reply text-green-500 mr-2"></i>' +
           responseText +
-          "<br>" +
-          "<small>ID: " +
+          "</p></div>" +
+          '<div class="text-xs text-gray-500"><i class="fas fa-hashtag mr-1"></i>' +
           item.query_id +
-          " | " +
+          ' • <i class="fas fa-clock mr-1"></i>' +
           timestamp +
-          "</small>" +
+          "</div>" +
           "</div>";
       }
       historyHtml += "</div>";
@@ -279,8 +289,8 @@ function loadHistory() {
     })
     .catch(function (error) {
       historyDiv.innerHTML =
-        '<div class="response">[ERROR] Error loading history: ' +
+        '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Error loading history: ' +
         error.message +
-        "</div>";
+        "</p></div></div></div>";
     });
 }

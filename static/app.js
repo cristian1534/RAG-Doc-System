@@ -1,62 +1,61 @@
 // Toast Notification System
-function showToast(message, type = "info", duration = 3000) {
-  const container = document.getElementById("toastContainer");
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type} fade-in`;
-
-  const icons = {
-    success: "fa-check-circle",
-    error: "fa-exclamation-circle",
-    warning: "fa-exclamation-triangle",
-    info: "fa-info-circle",
+function showToast(message, type, duration) {
+  if (type === undefined) type = 'info';
+  if (duration === undefined) duration = 3000;
+  
+  var container = document.getElementById("toastContainer");
+  var toast = document.createElement("div");
+  toast.className = "toast toast-" + type + " fade-in";
+  
+  var icons = {
+    success: 'fa-check-circle',
+    error: 'fa-exclamation-circle',
+    warning: 'fa-exclamation-triangle',
+    info: 'fa-info-circle'
   };
-
-  toast.innerHTML = `
-    <i class="fas ${icons[type]}"></i>
-    <span>${message}</span>
-  `;
-
+  
+  toast.innerHTML = '<i class="fas ' + icons[type] + '"></i><span>' + message + '</span>';
+  
   container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("hiding");
-    setTimeout(() => {
+  
+  setTimeout(function() {
+    toast.classList.add('hiding');
+    setTimeout(function() {
       container.removeChild(toast);
     }, 300);
   }, duration);
 }
 
 // Modern Confirmation Modal
-function showConfirmModal(title, message, onConfirm, onCancel = null) {
-  const overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-
-  const modal = document.createElement("div");
-  modal.className = "modal";
-
-  modal.innerHTML = `
-    <div class="modal-header">
-      <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
-      <h3 class="modal-title">${title}</h3>
-    </div>
-    <p class="modal-message">${message}</p>
-    <div class="modal-buttons">
-      <button class="btn-modal btn-modal-secondary" onclick="closeModal(this)">Cancel</button>
-      <button class="btn-modal btn-modal-primary" onclick="confirmModal(this)">Confirm</button>
-    </div>
-  `;
-
+function showConfirmModal(title, message, onConfirm, onCancel) {
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  
+  var modal = document.createElement('div');
+  modal.className = 'modal';
+  
+  modal.innerHTML = 
+    '<div class="modal-header">' +
+    '<i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>' +
+    '<h3 class="modal-title">' + title + '</h3>' +
+    '</div>' +
+    '<p class="modal-message">' + message + '</p>' +
+    '<div class="modal-buttons">' +
+    '<button class="btn-modal btn-modal-secondary" onclick="closeModal(this)">Cancel</button>' +
+    '<button class="btn-modal btn-modal-primary" onclick="confirmModal(this)">Confirm</button>' +
+    '</div>';
+  
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
-
-  window.closeModal = function (button) {
-    const overlay = button.closest(".modal-overlay");
+  
+  window.closeModal = function(button) {
+    var overlay = button.closest('.modal-overlay');
     document.body.removeChild(overlay);
     if (onCancel) onCancel();
   };
-
-  window.confirmModal = function (button) {
-    const overlay = button.closest(".modal-overlay");
+  
+  window.confirmModal = function(button) {
+    var overlay = button.closest('.modal-overlay');
     document.body.removeChild(overlay);
     if (onConfirm) onConfirm();
   };

@@ -1,3 +1,67 @@
+// Toast Notification System
+function showToast(message, type = "info", duration = 3000) {
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type} fade-in`;
+
+  const icons = {
+    success: "fa-check-circle",
+    error: "fa-exclamation-circle",
+    warning: "fa-exclamation-triangle",
+    info: "fa-info-circle",
+  };
+
+  toast.innerHTML = `
+    <i class="fas ${icons[type]}"></i>
+    <span>${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("hiding");
+    setTimeout(() => {
+      container.removeChild(toast);
+    }, 300);
+  }, duration);
+}
+
+// Modern Confirmation Modal
+function showConfirmModal(title, message, onConfirm, onCancel = null) {
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  modal.innerHTML = `
+    <div class="modal-header">
+      <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+      <h3 class="modal-title">${title}</h3>
+    </div>
+    <p class="modal-message">${message}</p>
+    <div class="modal-buttons">
+      <button class="btn-modal btn-modal-secondary" onclick="closeModal(this)">Cancel</button>
+      <button class="btn-modal btn-modal-primary" onclick="confirmModal(this)">Confirm</button>
+    </div>
+  `;
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  window.closeModal = function (button) {
+    const overlay = button.closest(".modal-overlay");
+    document.body.removeChild(overlay);
+    if (onCancel) onCancel();
+  };
+
+  window.confirmModal = function (button) {
+    const overlay = button.closest(".modal-overlay");
+    document.body.removeChild(overlay);
+    if (onConfirm) onConfirm();
+  };
+}
+
 function uploadDocument() {
   var fileInput = document.getElementById("fileInput");
   var responseDiv = document.getElementById("uploadResponse");
@@ -37,7 +101,8 @@ function uploadDocument() {
           result.filename +
           "</p><p><strong>Size:</strong> " +
           result.size +
-          " bytes</p></div></div></div></div>";
+          " bytes</p></div></div></div></div>';
+        showToast('Document uploaded successfully!', 'success');
         fileInput.value = "";
       } else {
         var errorMessage = result.detail || "Unknown error";
@@ -45,6 +110,7 @@ function uploadDocument() {
           '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Error: ' +
           errorMessage +
           "</p></div></div></div>";
+        showToast('Upload failed: ' + errorMessage, 'error');
       }
     })
     .catch(function (error) {
@@ -52,6 +118,7 @@ function uploadDocument() {
         '<div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg fade-in"><div class="flex"><i class="fas fa-exclamation-circle text-red-500 mr-3 mt-1"></i><div><p class="text-red-700 font-medium">Network error: ' +
         error.message +
         "</p></div></div></div>";
+      showToast('Network error: ' + error.message, 'error');
     })
     .finally(function () {
       uploadButton.disabled = false;
@@ -116,25 +183,28 @@ async function loadDocuments() {
 }
 
 async function deleteDocument(documentId) {
-  if (!confirm("Are you sure you want to delete this document?")) {
-    return;
-  }
-
-  try {
-    var response = await fetch("/documents/" + documentId, {
-      method: "DELETE",
-    });
-
-    if (response.ok) {
-      alert("Document deleted successfully!");
-      loadDocuments(); // Refresh the list
-    } else {
-      var error = await response.json();
-      alert("Error deleting document: " + (error.detail || "Unknown error"));
+  showConfirmModal(
+    'Delete Document',
+    'Are you sure you want to delete this document? This action cannot be undone.',
+    function() {
+      fetch("/documents/" + documentId, {
+        method: "DELETE",
+      })
+      .then(function (response) {
+        if (response.ok) {
+          showToast('Document deleted successfully!', 'success');
+          loadDocuments(); // Refresh the list
+        } else {
+          return response.json().then(function(error) {
+            throw new Error(error.detail || "Unknown error");
+          });
+        }
+      })
+      .catch(function (error) {
+        showToast('Error deleting document: ' + error.message, 'error');
+      });
     }
-  } catch (error) {
-    alert("Network error: " + error.message);
-  }
+  );
 }
 
 function queryDocuments() {
@@ -206,30 +276,33 @@ function queryDocuments() {
 }
 
 async function clearHistory() {
-  if (!confirm("Are you sure you want to clear all query history?")) {
-    return;
-  }
-
-  try {
-    var response = await fetch("/history", {
-      method: "DELETE",
-    });
-
-    if (response.ok) {
-      alert("History cleared successfully!");
-      // Hide the history section and clear the content
-      var historyDiv = document.getElementById("historyResponse");
-      historyDiv.style.display = "none";
-      historyDiv.innerHTML = "";
-      document.getElementById("historyButton").innerHTML =
-        '<i class="fas fa-clock mr-2"></i>Show History';
-    } else {
-      var error = await response.json();
-      alert("Error clearing history: " + (error.detail || "Unknown error"));
+  showConfirmModal(
+    'Clear History',
+    'Are you sure you want to clear all query history? This action cannot be undone.',
+    function() {
+      fetch("/history", {
+        method: "DELETE",
+      })
+      .then(function (response) {
+        if (response.ok) {
+          showToast('History cleared successfully!', 'success');
+          // Hide the history section and clear the content
+          var historyDiv = document.getElementById("historyResponse");
+          historyDiv.style.display = "none";
+          historyDiv.innerHTML = "";
+          document.getElementById("historyButton").innerHTML =
+            '<i class="fas fa-clock mr-2"></i>Show History';
+        } else {
+          return response.json().then(function(error) {
+            throw new Error(error.detail || "Unknown error");
+          });
+        }
+      })
+      .catch(function (error) {
+        showToast('Error clearing history: ' + error.message, 'error');
+      });
     }
-  } catch (error) {
-    alert("Network error: " + error.message);
-  }
+  );
 }
 
 var historyVisible = false;

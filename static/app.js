@@ -196,6 +196,32 @@ function queryDocuments() {
     });
 }
 
+async function clearHistory() {
+  if (!confirm("Are you sure you want to clear all query history?")) {
+    return;
+  }
+
+  try {
+    var response = await fetch("/history", {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      alert("History cleared successfully!");
+      // Hide the history section and clear the content
+      var historyDiv = document.getElementById("historyResponse");
+      historyDiv.style.display = "none";
+      historyDiv.innerHTML = "";
+      document.getElementById("historyButton").textContent = "Show History";
+    } else {
+      var error = await response.json();
+      alert("Error clearing history: " + (error.detail || "Unknown error"));
+    }
+  } catch (error) {
+    alert("Network error: " + error.message);
+  }
+}
+
 var historyVisible = false;
 
 function loadHistory() {

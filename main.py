@@ -213,6 +213,16 @@ Please provide a comprehensive answer based only on the provided context."""
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
+@app.delete("/history")
+async def clear_query_history():
+    """Clear all query history"""
+    try:
+        global query_results
+        query_results.clear()
+        return {"message": "Query history cleared successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error clearing history: {str(e)}")
+
 @app.get("/history")
 async def get_query_history():
     """Get query history"""

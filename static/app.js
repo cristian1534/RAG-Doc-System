@@ -168,54 +168,20 @@ function queryDocuments() {
       if (!response.ok) {
         throw new Error("HTTP error! status: " + response.status);
       }
-
-      var reader = response.body.getReader();
-      var decoder = new TextDecoder();
-      var fullResponse = "";
-
-      function readStream() {
-        return reader.read().then(function (result) {
-          var done = result.done;
-          var value = result.value;
-
-          if (done) {
-            return;
-          }
-
-          var chunk = decoder.decode(value);
-          var lines = chunk.split("\\n");
-
-          for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            if (line.startsWith("data: ")) {
-              try {
-                var data = JSON.parse(line.substring(6));
-                if (data.type === "content" && data.chunk) {
-                  fullResponse += data.chunk;
-                  streamingSpan.textContent = fullResponse;
-                } else if (data.type === "complete" && data.query_id) {
-                  streamingSpan.innerHTML =
-                    fullResponse +
-                    "<br><br><small>Query ID: " +
-                    data.query_id +
-                    "</small>";
-                } else if (data.type === "error" && data.error) {
-                  responseDiv.innerHTML =
-                    '<div class="response">[ERROR] Error: ' +
-                    data.error +
-                    "</div>";
-                }
-              } catch (e) {
-                console.error("Error parsing chunk:", e);
-              }
-            }
-          }
-
-          return readStream();
-        });
+      return response.json();
+    })
+    .then(function (data) {
+      if (data.type === "complete" && data.response) {
+        streamingSpan.textContent = data.response;
+        streamingSpan.innerHTML +=
+          "<br><br><small>Query ID: " + data.query_id + "</small>";
+      } else if (data.type === "error" && data.error) {
+        responseDiv.innerHTML =
+          '<div class="response">[ERROR] Error: ' + data.error + "</div>";
+      } else {
+        responseDiv.innerHTML =
+          '<div class="response">[ERROR] Invalid response format</div>';
       }
-
-      return readStream();
     })
     .catch(function (error) {
       responseDiv.innerHTML =

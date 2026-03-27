@@ -169,7 +169,7 @@ async def delete_document(document_id: str):
 
 @app.post("/query")
 async def query_documents(request: QueryRequest):
-    """Query documents endpoint with streaming response"""
+    """Query documents endpoint (non-streaming for production compatibility)"""
     try:
         if not document_store:
             raise HTTPException(status_code=400, detail="No documents uploaded yet")
@@ -191,32 +191,22 @@ Question: {request.query}
 
 Please provide a comprehensive answer based only on the provided context."""
         
-        async def generate_stream():
-            full_response = ""
-            try:
-                async for chunk in ollama_service.generate_response_stream(prompt):
-                    full_response += chunk
-                    yield f"data: {json.dumps({'chunk': chunk, 'type': 'content'})}\n\n"
-                
-                # Save to history after streaming completes
-                query_id = str(uuid.uuid4())
-                query_results[query_id] = {
-                    "query": request.query,
-                    "response": full_response,
-                    "timestamp": str(asyncio.get_event_loop().time())
-                }
-                
-                yield f"data: {json.dumps({'query_id': query_id, 'type': 'complete'})}\n\n"
-                
-            except Exception as e:
-                error_msg = str(e)
-                yield f"data: {json.dumps({'error': error_msg, 'type': 'error'})}\n\n"
+        # Use non-streaming response for better production compatibility
+        response_text = await ollama_service.generate_response(prompt)
         
-        return StreamingResponse(
-            generate_stream(),
-            media_type="text/plain",
-            headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
-        )
+        # Save to history
+        query_id = str(uuid.uuid4())
+        query_results[query_id] = {
+            "query": request.query,
+            "response": response_text,
+            "timestamp": str(asyncio.get_event_loop().time())
+        }
+        
+        return {
+            "query_id": query_id,
+            "response": response_text,
+            "type": "complete"
+        }
         
     except HTTPException:
         raise

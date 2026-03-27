@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <title>RAG Document System</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #0078d4;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e1e1e1;
+        border-radius: 4px;
+        background-color: #fafafa;
+      }
+      .section h2 {
+        color: #0078d4;
+        margin-top: 0;
+        font-size: 18px;
+      }
+      input[type="file"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      textarea {
+        height: 100px;
+        resize: vertical;
+      }
+      button {
+        background-color: #0078d4;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #005a9e;
+      }
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+      .response {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e8f4fd;
+        border-left: 4px solid #0078d4;
+        border-radius: 4px;
+        white-space: pre-wrap;
+      }
+      .loading {
+        color: #0078d4;
+        font-style: italic;
+      }
+      .file-info {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #e8f4fd;
+        border-radius: 4px;
+        font-size: 12px;
+        color: #333;
+      }
+      #historyResponse {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>RAG Document System</h1>
+
+      <div class="section">
+        <h2>Upload Document</h2>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" />
+        <button onclick="uploadDocument()" id="uploadButton">Upload</button>
+        <div id="uploadResponse"></div>
+      </div>
+
+      <div class="section">
+        <h2>Manage Documents</h2>
+        <button onclick="loadDocuments()" id="documentButton">
+          Show Documents
+        </button>
+        <div id="documentList" style="display: none"></div>
+      </div>
+
+      <div class="section">
+        <h2>Query Documents</h2>
+        <textarea
+          id="queryInput"
+          placeholder="Enter your question about the uploaded documents..."
+        ></textarea>
+        <button onclick="queryDocuments()" id="queryButton">Query</button>
+        <div id="queryResponse"></div>
+      </div>
+
+      <div class="section">
+        <h2>Query History</h2>
+        <button onclick="loadHistory()" id="historyButton">Show History</button>
+        <div id="historyResponse" style="display: none"></div>
+      </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
